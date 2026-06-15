@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -33,9 +34,30 @@ func main() {
 	// Подключение роутера для эндпоинтов
 	mux := http.NewServeMux()
 
-	// Эндпоинт пинга
+	// Эндпоинт проверки работоспособности
 	mux.HandleFunc("GET /ping", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "pong")
+		// Проверка работаспособности API
+		apiStatus := "OK"
+
+		// Проверка доступности 1С
+		err := odataClient.Ping()
+		oneCStatus := "OK"
+		if err != nil {
+			oneCStatus = fmt.Sprintf("FAILED (%v)", err)
+		}
+
+		// Сборка ответа
+		w.Header().Set("Content-Type", "application/json")
+		if err != nil {
+			w.WriteHeader(http.StatusServiceUnavailable) // 503, если 1С недоступна
+		}
+
+		response := map[string]string{
+			"api": apiStatus,
+			"1c":  oneCStatus,
+		}
+
+		json.NewEncoder(w).Encode(response)
 	})
 
 	// Регистрация эндпоинтов для групп

@@ -136,3 +136,10 @@ func (c *ODataClient) Delete(endpoint string) error {
 
 	return nil
 }
+
+// Ping проверка доступности OData-сервиса 1С
+func (c *ODataClient) Ping() error {
+	// GET-запрос к метаданным
+	_, err := c.Get("$metadata")
+	return err
+}
