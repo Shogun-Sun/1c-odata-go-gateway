@@ -48,7 +48,7 @@ type TeacherCreatePayload struct {
 // ODataTeacherCreate определяет структуру для отправки POST-запроса в 1С
 type ODataTeacherCreate struct {
 	Description   string   `json:"Description"`
-	DepartmentKey string   `json:"Кафедра_Key"` // 1С OData ждет суффикс _Key для ссылочных реквизитов
+	DepartmentKey string   `json:"Кафедра_Key,omitempty"` // 1С OData ждет суффикс _Key для ссылочных реквизитов
 	Position      Position `json:"Должность"`
 }
 

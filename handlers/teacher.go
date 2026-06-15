@@ -65,10 +65,10 @@ func (h *TeacherHandler) CreateTeacher(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "ФИО преподавателя не может быть пустым", http.StatusBadRequest)
 		return
 	}
-	if payload.Department == "" {
-		http.Error(w, "ID кафедры не может быть пустым", http.StatusBadRequest)
-		return
-	}
+	//	if payload.Department == "" {
+	//		http.Error(w, "ID кафедры не может быть пустым", http.StatusBadRequest)
+	//		return
+	//	}
 	if !payload.Position.IsValid() {
 		http.Error(w, fmt.Sprintf("Некорректная должность: %s", payload.Position), http.StatusBadRequest)
 		return
