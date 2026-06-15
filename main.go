@@ -27,6 +27,7 @@ func main() {
 	groupHandler := handlers.NewGroupHandler(odataClient)
 	classroomHandler := handlers.NewClassroomHandler(odataClient)
 	teacherHandler := handlers.NewTeacherHandler(odataClient)
+	departmentHandler := handlers.NewDepartmentHandler(odataClient)
 
 	// Подключение роутера для эндпоинтов
 	mux := http.NewServeMux()
@@ -53,6 +54,12 @@ func main() {
 	mux.HandleFunc("POST /api/v1/teachers", teacherHandler.CreateTeacher)
 	mux.HandleFunc("PATCH /api/v1/teachers/{id}", teacherHandler.UpdateTeacher)
 	mux.HandleFunc("DELETE /api/v1/teachers/{id}", teacherHandler.DeleteTeacher)
+
+	// Регистрация эндпоинтов кафедры
+	mux.HandleFunc("GET /api/v1/departments", departmentHandler.GetDepartments)
+	mux.HandleFunc("POST /api/v1/departments", departmentHandler.CreateDepartment)
+	mux.HandleFunc("PATCH /api/v1/departments/{id}", departmentHandler.UpdateDepartment)
+	mux.HandleFunc("DELETE /api/v1/departments/{id}", departmentHandler.DeleteDepartment)
 
 	// Запуск сервера
 	log.Printf("Go-сервер успешно запущен на http://localhost%s\n", ServerPort)
