@@ -19,28 +19,35 @@ const (
 func main() {
 	log.Println("Запуск модульной API-обертки...")
 
-	// 1. Инициализируем клиент из пакета client
+	// Инициализируем клиент
 	odataClient := client.NewODataClient(ODataURL, Username, Password)
 	log.Printf("Клиент OData настроен на адрес: %s\n", odataClient.BaseURL)
 
-	// 2. Инициализируем хендлер групп и передаем ему клиент
+	// Инициализация хэндлеров
 	groupHandler := handlers.NewGroupHandler(odataClient)
+	classroomHandler := handlers.NewClassroomHandler(odataClient)
 
-	// 3. Роутер
+	// Подключение роутера для эндпоинтов
 	mux := http.NewServeMux()
 
-	// ping
+	// Эндпоинт пинга
 	mux.HandleFunc("GET /ping", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "pong")
 	})
 
-	// 4. РЕГИСТРИРУЕМ ЭНДПОИНТ ДЛЯ ГРУПП
+	// Регистрация эндпоинтов для групп
 	mux.HandleFunc("GET /api/v1/groups", groupHandler.GetGroups)
 	mux.HandleFunc("POST /api/v1/groups", groupHandler.CreateGroup)
 	mux.HandleFunc("PATCH /api/v1/groups/{id}", groupHandler.UpdateGroup)
 	mux.HandleFunc("DELETE /api/v1/groups/{id}", groupHandler.DeleteGroup)
 
-	// 5. Старт сервера
+	// Регистрация эндпоинтов кабинетов
+	mux.HandleFunc("GET /api/v1/classrooms", classroomHandler.GetClassrooms)
+	mux.HandleFunc("POST /api/v1/classrooms", classroomHandler.CreateClassroom)
+	mux.HandleFunc("PATCH /api/v1/classrooms/{id}", classroomHandler.UpdateClassroom)
+	mux.HandleFunc("DELETE /api/v1/classrooms/{id}", classroomHandler.DeleteClassroom)
+
+	// Запуск сервера
 	log.Printf("Go-сервер успешно запущен на http://localhost%s\n", ServerPort)
 	err := http.ListenAndServe(ServerPort, mux)
 	if err != nil {
