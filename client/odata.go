@@ -29,6 +29,7 @@ func NewODataClient(baseURL, user, pass string) *ODataClient {
 	}
 }
 
+// Get выполняет авторизованный Get-запрос к 1С для получения объектов
 func (c *ODataClient) Get(endpoint string) ([]byte, error) {
 	req, err := http.NewRequest("GET", c.BaseURL+endpoint, nil)
 	if err != nil {
@@ -51,6 +52,7 @@ func (c *ODataClient) Get(endpoint string) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
+// Post выполняет авторизованный Post-запрос к 1С для создания объекта
 func (c *ODataClient) Post(endpoint string, body interface{}) ([]byte, error) {
 	jsonBytes, err := json.Marshal(body)
 	if err != nil {
@@ -78,4 +80,59 @@ func (c *ODataClient) Post(endpoint string, body interface{}) ([]byte, error) {
 	}
 
 	return io.ReadAll(resp.Body)
+}
+
+// Patch выполняет авторизованный PATCH-запрос к 1С для частичного обновления объекта
+func (c *ODataClient) Patch(endpoint string, body interface{}) error {
+	jsonBytes, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("ошибка сериализации JSON: %v", err)
+	}
+
+	req, err := http.NewRequest("PATCH", c.BaseURL+endpoint, bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return fmt.Errorf("ошибка создания PATCH-запроса: %v", err)
+	}
+
+	req.Header.Set("Authorization", c.AuthHeader)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.Client.Do(req)
+	if err != nil {
+		return fmt.Errorf("ошибка выполнения PATCH-запроса: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// 1С при успешном обновлении возвращает 200 OK или 204 No Content
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("1С вернула статус %s: %s", resp.Status, string(respBody))
+	}
+
+	return nil
+}
+
+// Delete выполняет авторизованный DELETE-запрос к 1С для удаления объекта
+func (c *ODataClient) Delete(endpoint string) error {
+	req, err := http.NewRequest("DELETE", c.BaseURL+endpoint, nil)
+	if err != nil {
+		return fmt.Errorf("ошибка создания DELETE-запроса: %v", err)
+	}
+
+	req.Header.Set("Authorization", c.AuthHeader)
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.Client.Do(req)
+	if err != nil {
+		return fmt.Errorf("ошибка выполнения DELETE-запроса: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("1С вернула статус %s: %s", resp.Status, string(respBody))
+	}
+
+	return nil
 }

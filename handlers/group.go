@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"academic-booking-api/client"
@@ -86,4 +87,67 @@ func (h *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	// 4. Отдаем клиенту то, что вернула 1С (со всеми системными полями и сгенерированным Ref_Key)
 	w.WriteHeader(http.StatusCreated)
 	w.Write(rawData)
+}
+
+// PATCH /api/v1/groups/{id}
+func (h *GroupHandler) UpdateGroup(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// Вытаскиваем {id} из URL-пути (фишка Go 1.22+)
+	id := r.PathValue("id")
+	if id == "" {
+		http.Error(w, "ID группы не указан", http.StatusBadRequest)
+		return
+	}
+
+	var payload models.GroupUpdatePayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Некорректный JSON", http.StatusBadRequest)
+		return
+	}
+
+	// Собираем тело для 1С
+	odataBody := models.ODataGroupUpdate{}
+	if payload.Name != nil {
+		odataBody.Description = *payload.Name
+	}
+	if payload.Quantity != nil {
+		odataBody.Quantity = *payload.Quantity
+	}
+
+	// Формируем хитрый эндпоинт 1С: Catalog_УчебныеГруппы(guid'твой-uuid')
+	endpoint := fmt.Sprintf("Catalog_УчебныеГруппы(guid'%s')", id)
+
+	// Отправляем в 1С
+	err := h.OData.Patch(endpoint, odataBody)
+	if err != nil {
+		http.Error(w, "Ошибка обновления в 1С: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Возвращаем статус 200 OK и подтверждение
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"status":"updated"}` + "\n"))
+}
+
+// DELETE /api/v1/groups/{id}
+func (h *GroupHandler) DeleteGroup(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	id := r.PathValue("id")
+	if id == "" {
+		http.Error(w, "ID группы не указан", http.StatusBadRequest)
+		return
+	}
+
+	endpoint := fmt.Sprintf("Catalog_УчебныеГруппы(guid'%s')", id)
+
+	err := h.OData.Delete(endpoint)
+	if err != nil {
+		http.Error(w, "Ошибка удаления в 1С: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"status":"deleted"}` + "\n"))
 }

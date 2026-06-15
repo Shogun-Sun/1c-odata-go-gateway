@@ -25,3 +25,13 @@ type ODataGroupCreate struct {
 type ODataGroupResponse struct {
 	Value []ODataGroup `json:"value"`
 }
+
+type GroupUpdatePayload struct {
+	Name     *string `json:"name,omitempty"`
+	Quantity *int    `json:"quantity,omitempty"`
+}
+
+type ODataGroupUpdate struct {
+	Description string `json:"Description,omitempty"`
+	Quantity    int    `json:"Численность,omitempty"`
+}

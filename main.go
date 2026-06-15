@@ -37,6 +37,8 @@ func main() {
 	// 4. РЕГИСТРИРУЕМ ЭНДПОИНТ ДЛЯ ГРУПП
 	mux.HandleFunc("GET /api/v1/groups", groupHandler.GetGroups)
 	mux.HandleFunc("POST /api/v1/groups", groupHandler.CreateGroup)
+	mux.HandleFunc("PATCH /api/v1/groups/{id}", groupHandler.UpdateGroup)
+	mux.HandleFunc("DELETE /api/v1/groups/{id}", groupHandler.DeleteGroup)
 
 	// 5. Старт сервера
 	log.Printf("Go-сервер успешно запущен на http://localhost%s\n", ServerPort)
