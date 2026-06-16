@@ -1,3 +1,6 @@
+// Package client реализует низкоуровневый HTTP-клиент для работы с интерфейсом OData 1С.
+// Обеспечивает автоматическую сборку заголовков авторизации, управление таймаутами
+// и унифицированную обработку статус-кодов ответов платформы 1С:Предприятие.
 package client
 
 import (
@@ -10,12 +13,14 @@ import (
 	"time"
 )
 
+// ODataClient инкапсулирует параметры подключения и HTTP-клиент для отправки запросов в 1С.
 type ODataClient struct {
-	BaseURL    string
-	AuthHeader string
-	Client     *http.Client
+	BaseURL    string       // Корневой URL OData-интерфейса (включая имя информационной базы)
+	AuthHeader string       // Предварительно собранный заголовок Basic-авторизации
+	Client     *http.Client // Настроенный HTTP-клиент с управлением таймаутами
 }
 
+// NewODataClient инициализирует и возвращает новый экземпляр ODataClient.
 func NewODataClient(baseURL, user, pass string) *ODataClient {
 	authStr := fmt.Sprintf("%s:%s", user, pass)
 	encodedAuth := base64.StdEncoding.EncodeToString([]byte(authStr))
@@ -29,7 +34,7 @@ func NewODataClient(baseURL, user, pass string) *ODataClient {
 	}
 }
 
-// Get выполняет авторизованный Get-запрос к 1С для получения объектов
+// Get выполняет авторизованный GET-запрос к 1С для получения сырых байтовых данных.
 func (c *ODataClient) Get(endpoint string) ([]byte, error) {
 	req, err := http.NewRequest("GET", c.BaseURL+endpoint, nil)
 	if err != nil {
@@ -52,7 +57,7 @@ func (c *ODataClient) Get(endpoint string) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
-// Post выполняет авторизованный Post-запрос к 1С для создания объекта
+// Post выполняет авторизованный POST-запрос к 1С для создания нового объекта.
 func (c *ODataClient) Post(endpoint string, body interface{}) ([]byte, error) {
 	jsonBytes, err := json.Marshal(body)
 	if err != nil {
@@ -82,7 +87,7 @@ func (c *ODataClient) Post(endpoint string, body interface{}) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
-// Patch выполняет авторизованный PATCH-запрос к 1С для частичного обновления объекта
+// Patch выполняет авторизованный PATCH-запрос к 1С для частичного обновления существующего объекта.
 func (c *ODataClient) Patch(endpoint string, body interface{}) error {
 	jsonBytes, err := json.Marshal(body)
 	if err != nil {
@@ -100,11 +105,10 @@ func (c *ODataClient) Patch(endpoint string, body interface{}) error {
 
 	resp, err := c.Client.Do(req)
 	if err != nil {
-		return fmt.Errorf("ошибка выполнения PATCH-запроса: %v", err)
+		return fmt.Errorf("ошибка выполнения PATCH-запроса к 1С: %v", err)
 	}
 	defer resp.Body.Close()
 
-	// 1С при успешном обновлении возвращает 200 OK или 204 No Content
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		respBody, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("1С вернула статус %s: %s", resp.Status, string(respBody))
@@ -113,7 +117,7 @@ func (c *ODataClient) Patch(endpoint string, body interface{}) error {
 	return nil
 }
 
-// Delete выполняет авторизованный DELETE-запрос к 1С для удаления объекта
+// Delete выполняет авторизованный DELETE-запрос к 1С для удаления объекта по его идентификатору.
 func (c *ODataClient) Delete(endpoint string) error {
 	req, err := http.NewRequest("DELETE", c.BaseURL+endpoint, nil)
 	if err != nil {
@@ -125,7 +129,7 @@ func (c *ODataClient) Delete(endpoint string) error {
 
 	resp, err := c.Client.Do(req)
 	if err != nil {
-		return fmt.Errorf("ошибка выполнения DELETE-запроса: %v", err)
+		return fmt.Errorf("ошибка выполнения DELETE-запроса к 1С: %v", err)
 	}
 	defer resp.Body.Close()
 
@@ -137,9 +141,8 @@ func (c *ODataClient) Delete(endpoint string) error {
 	return nil
 }
 
-// Ping проверка доступности OData-сервиса 1С
+// Ping проверяет доступность OData-сервиса 1С путем запроса метаданных системы.
 func (c *ODataClient) Ping() error {
-	// GET-запрос к метаданным
 	_, err := c.Get("$metadata")
 	return err
 }
