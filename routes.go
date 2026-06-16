@@ -19,6 +19,7 @@ func setupRoutes(odataClient *client.ODataClient) http.Handler {
 	departmentHandler := handlers.NewDepartmentHandler(odataClient)
 	disciplineHandler := handlers.NewDisciplineHandler(odataClient)
 	teacherHandler := handlers.NewTeacherHandler(odataClient)
+	bookingHandler := handlers.NewBookingHandler(odataClient)
 
 	// Эндпоинт проверки работоспособности (Health Check)
 	mux.HandleFunc("GET /ping", func(w http.ResponseWriter, r *http.Request) {
@@ -71,6 +72,13 @@ func setupRoutes(odataClient *client.ODataClient) http.Handler {
 	mux.HandleFunc("POST /api/v1/disciplines", disciplineHandler.CreateDiscipline)
 	mux.HandleFunc("PATCH /api/v1/disciplines/{id}", disciplineHandler.UpdateDiscipline)
 	mux.HandleFunc("DELETE /api/v1/disciplines/{id}", disciplineHandler.DeleteDiscipline)
+
+	// Бронирования (Документ)
+	mux.HandleFunc("GET /api/v1/bookings", bookingHandler.GetBookings)
+	mux.HandleFunc("POST /api/v1/bookings", bookingHandler.CreateBooking)
+	mux.HandleFunc("PATCH /api/v1/bookings/{id}", bookingHandler.UpdateBooking)
+	mux.HandleFunc("DELETE /api/v1/bookings/{id}", bookingHandler.DeleteBooking)
+	mux.HandleFunc("DELETE /api/v1/bookings", bookingHandler.DeleteAllBookings)
 
 	return mux
 }

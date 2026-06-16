@@ -51,3 +51,23 @@ func (p Position) IsValid() bool {
 	}
 	return false
 }
+
+// LessonType определяет вид занятия
+type LessonType string
+
+const (
+	LessonLecture      LessonType = "Лекция"
+	LessonLaboratory   LessonType = "Лабораторная"
+	LessonExam         LessonType = "Экзамен"
+	LessonConsultation LessonType = "Консультация"
+)
+
+// IsValid проверяет, входит ли переданный вид занятия в список допустимых в 1С.
+func (lt LessonType) IsValid() bool {
+	switch lt {
+	case LessonLecture, LessonLaboratory, LessonExam, LessonConsultation:
+		return true
+	}
+
+	return false
+}
