@@ -1,9 +1,9 @@
 package models
 
-// Position определяет должность преподавателя (строго типизированная строка).
+// Position определяет должность преподавателя в виде строго типизированной строки.
 type Position string
 
-// Перечень разрешенных должностей из перечисления в 1С.
+// Константы должностей, соответствующие значениям перечисления в конфигураторе 1С.
 const (
 	PositionTeacher Position = "Преподаватель"
 )
@@ -17,49 +17,49 @@ func (p Position) IsValid() bool {
 	return false
 }
 
-// Teacher описывает чистый объект преподавателя для фронтенда (GET)
+// Teacher описывает модель преподавателя, возвращаемую клиенту (Web API).
 type Teacher struct {
-	ID         string   `json:"id"`         // UUID преподавателя
-	FullName   string   `json:"full_name"`  // ФИО (Description в 1С)
-	Department string   `json:"department"` // UUID кафедры (Кафедра_Key)
-	Position   Position `json:"position"`   // Должность
+	ID         string   `json:"id"`
+	FullName   string   `json:"full_name"`
+	Department string   `json:"department"`
+	Position   Position `json:"position"`
 }
 
-// ODataTeacher соответствует JSON-объекту, который возвращает 1С при GET-запросе
+// ODataTeacher описывает структуру преподавателя в формате OData 1С.
 type ODataTeacher struct {
-	RefKey        string   `json:"Ref_Key"`     // UUID элемента
-	Description   string   `json:"Description"` // ФИО преподавателя
-	DepartmentKey string   `json:"Кафедра_Key"` // Ссылка на GUID кафедры
-	Position      Position `json:"Должность"`   // Значение перечисления Должности
+	RefKey        string   `json:"Ref_Key"`
+	Description   string   `json:"Description"`
+	DepartmentKey string   `json:"Кафедра_Key"`
+	Position      Position `json:"Должность"`
 }
 
-// ODataTeacherResponse описывает обертку верхнего уровня для GET-ответов от OData 1С
+// ODataTeacherResponse представляет контейнер верхнего уровня для списка преподавателей из 1С.
 type ODataTeacherResponse struct {
 	Value []ODataTeacher `json:"value"`
 }
 
-// TeacherCreatePayload прилетает от фронтенда при создании (POST)
+// TeacherCreatePayload содержит данные от фронтенда для создания нового преподавателя.
 type TeacherCreatePayload struct {
 	FullName   string   `json:"full_name"`
-	Department string   `json:"department"` // UUID кафедры
+	Department string   `json:"department"`
 	Position   Position `json:"position"`
 }
 
-// ODataTeacherCreate определяет структуру для отправки POST-запроса в 1С
+// ODataTeacherCreate определяет структуру POST-запроса для создания преподавателя в 1С.
 type ODataTeacherCreate struct {
 	Description   string   `json:"Description"`
-	DepartmentKey string   `json:"Кафедра_Key,omitempty"` // 1С OData ждет суффикс _Key для ссылочных реквизитов
+	DepartmentKey string   `json:"Кафедра_Key,omitempty"`
 	Position      Position `json:"Должность"`
 }
 
-// TeacherUpdatePayload прилетает от фронтенда для изменения (PATCH)
+// TeacherUpdatePayload содержит поля для частичного изменения данных преподавателя (PATCH).
 type TeacherUpdatePayload struct {
 	FullName   *string   `json:"full_name,omitempty"`
 	Department *string   `json:"department,omitempty"`
 	Position   *Position `json:"position,omitempty"`
 }
 
-// ODataTeacherUpdate передает измененные реквизиты в 1С
+// ODataTeacherUpdate определяет структуру PATCH-запроса для обновления преподавателя в 1С.
 type ODataTeacherUpdate struct {
 	Description   string   `json:"Description,omitempty"`
 	DepartmentKey string   `json:"Кафедра_Key,omitempty"`

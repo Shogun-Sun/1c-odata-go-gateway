@@ -1,42 +1,43 @@
 package models
 
-// Department — чистый объект кафедры для фронтенда
+// Department описывает модель кафедры, возвращаемую клиенту (Web API).
 type Department struct {
-	ID          string `json:"id"`           // UUID кафедры
-	Name        string `json:"name"`         // Наименование (Description)
-	HeadTeacher string `json:"head_teacher"` // UUID преподавателя-заведующего
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	HeadTeacher string `json:"head_teacher"`
 }
 
-// ODataDepartment соответствует ответу от 1С
+// ODataDepartment описывает структуру кафедры в формате OData 1С.
 type ODataDepartment struct {
 	RefKey         string `json:"Ref_Key"`
 	Description    string `json:"Description"`
 	HeadTeacherKey string `json:"Заведующий_Key"`
 }
 
+// ODataDepartmentResponse представляет контейнер верхнего уровня для списка кафедр из 1С.
 type ODataDepartmentResponse struct {
 	Value []ODataDepartment `json:"value"`
 }
 
-// DepartmentCreatePayload — данные от фронта для создания
+// DepartmentCreatePayload содержит данные от фронтенда для создания новой кафедры.
 type DepartmentCreatePayload struct {
 	Name        string `json:"name"`
 	HeadTeacher string `json:"head_teacher"`
 }
 
-// ODataDepartmentCreate — структура для POST-запроса в 1С
+// ODataDepartmentCreate определяет структуру POST-запроса для создания кафедры в 1С.
 type ODataDepartmentCreate struct {
 	Description    string `json:"Description"`
 	HeadTeacherKey string `json:"Заведующий_Key"`
 }
 
-// DepartmentUpdatePayload — для PATCH
+// DepartmentUpdatePayload содержит поля для частичного изменения кафедры (PATCH).
 type DepartmentUpdatePayload struct {
 	Name        *string `json:"name,omitempty"`
 	HeadTeacher *string `json:"head_teacher,omitempty"`
 }
 
-// ODataDepartmentUpdate — для PATCH-запроса в 1С
+// ODataDepartmentUpdate определяет структуру PATCH-запроса для обновления кафедры в 1С.
 type ODataDepartmentUpdate struct {
 	Description    string `json:"Description,omitempty"`
 	HeadTeacherKey string `json:"Заведующий_Key,omitempty"`

@@ -9,14 +9,17 @@ import (
 	"academic-booking-api/models"
 )
 
+// DepartmentHandler отвечает за обработку HTTP-запросов для сущности «Кафедры».
 type DepartmentHandler struct {
 	OData *client.ODataClient
 }
 
+// NewDepartmentHandler возвращает новый экземпляр DepartmentHandler.
 func NewDepartmentHandler(odataClient *client.ODataClient) *DepartmentHandler {
 	return &DepartmentHandler{OData: odataClient}
 }
 
+// GetDepartments обрабатывает запрос GET /api/v1/departments для получения списка всех кафедр.
 func (h *DepartmentHandler) GetDepartments(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -41,11 +44,14 @@ func (h *DepartmentHandler) GetDepartments(w http.ResponseWriter, r *http.Reques
 			HeadTeacher: od.HeadTeacherKey,
 		})
 	}
+
 	json.NewEncoder(w).Encode(departments)
 }
 
+// CreateDepartment обрабатывает запрос POST /api/v1/departments для создания новой кафедры.
 func (h *DepartmentHandler) CreateDepartment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	var payload models.DepartmentCreatePayload
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "Некорректный JSON", http.StatusBadRequest)
@@ -62,17 +68,23 @@ func (h *DepartmentHandler) CreateDepartment(w http.ResponseWriter, r *http.Requ
 		http.Error(w, "Ошибка создания: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.WriteHeader(http.StatusCreated)
 	w.Write(rawData)
 }
 
+// UpdateDepartment обрабатывает запрос PATCH /api/v1/departments/{id} для частичного обновления кафедры.
 func (h *DepartmentHandler) UpdateDepartment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	id := r.PathValue("id")
+	if id == "" {
+		http.Error(w, "ID кафедры не указан", http.StatusBadRequest)
+		return
+	}
 
 	var payload models.DepartmentUpdatePayload
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		fmt.Printf("DEBUG: Ошибка декодирования JSON: %v\n", err)
 		http.Error(w, "Некорректный JSON", http.StatusBadRequest)
 		return
 	}
@@ -97,6 +109,7 @@ func (h *DepartmentHandler) UpdateDepartment(w http.ResponseWriter, r *http.Requ
 	w.Write([]byte(`{"status":"updated"}` + "\n"))
 }
 
+// DeleteDepartment обрабатывает запрос DELETE /api/v1/departments/{id} для удаления кафедры.
 func (h *DepartmentHandler) DeleteDepartment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 

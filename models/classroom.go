@@ -1,27 +1,23 @@
 package models
 
-// RoomType определяет тип кабинета (строго типизированная строка).
-// Нужен для исключения опечаток при передаче типов комнат в коде.
+// RoomType определяет тип назначения аудитории.
 type RoomType string
 
-// Building определяет учебный корпус или площадку.
-// Предотвращает сквозной проброс некорректных текстовых названий площадок.
+// Building определяет учебный корпус площадки.
 type Building string
 
-// Фиксированный перечень разрешенных значений (аналог Enum в 1С).
-// Значения констант должны строго совпадать с ИМЕНАМИ объектов в конфигураторе 1С.
+// Константы перечислений, строго соответствующие именам объектов в конфигураторе 1С.
 const (
-	RoomComputer RoomType = "КомпьютерныйКласс" // Кабинет с ПК
-	RoomLecture  RoomType = "Лекционный"        // Амфитеатр или поточная аудитория
-	RoomLab      RoomType = "Лаборатория"       // Специализированная лаборатория
+	RoomComputer RoomType = "КомпьютерныйКласс"
+	RoomLecture  RoomType = "Лекционный"
+	RoomLab      RoomType = "Лаборатория"
 
-	BuildingMain   Building = "ПерваяПлощадка" // Главный корпус
-	BuildingSecond Building = "ВтораяПлощадка" // Дополнительный учебный корпус
-	BuildingSormov Building = "Общежитие"      // Помещения в здании общежития
+	BuildingMain   Building = "ПерваяПлощадка"
+	BuildingSecond Building = "ВтораяПлощадка"
+	BuildingSormov Building = "Общежитие"
 )
 
-// IsValid проверяет, входит ли переданный корпус в список разрешенных в 1С.
-// Используется в хендлерах как «щит» перед отправкой запроса к базе данных.
+// IsValid проверяет, входит ли переданный корпус в список разрешенных.
 func (b Building) IsValid() bool {
 	switch b {
 	case BuildingMain, BuildingSecond, BuildingSormov:
@@ -31,7 +27,6 @@ func (b Building) IsValid() bool {
 }
 
 // IsValid проверяет, валиден ли переданный тип кабинета.
-// Гарантирует, что фронтенд прислал известное системе назначение комнаты.
 func (rt RoomType) IsValid() bool {
 	switch rt {
 	case RoomComputer, RoomLecture, RoomLab:
@@ -40,67 +35,57 @@ func (rt RoomType) IsValid() bool {
 	return false
 }
 
-// Classroom описывает чистый объект кабинета, который отдается на фронтенд.
-// Поля приведены к стандартному веб-виду (id вместо Ref_Key, room_type вместо ТипКабинета).
+// Classroom описывает модель аудитории, возвращаемую клиенту (Web API).
 type Classroom struct {
-	ID       string   `json:"id"`        // Уникальный UUID объекта
-	Number   string   `json:"number"`    // Номер кабинета (Description в 1С)
-	Capacity int      `json:"capacity"`  // Вместимость мест
-	RoomType RoomType `json:"room_type"` // Тип (Компьютерный, Лекционный...)
-	Building Building `json:"building"`  // Учебный корпус
+	ID       string   `json:"id"`
+	Number   string   `json:"number"`
+	Capacity int      `json:"capacity"`
+	RoomType RoomType `json:"room_type"`
+	Building Building `json:"building"`
 }
 
-// ODataClassroom соответствует сырому JSON-объекту, который возвращает 1С при GET-запросе.
-// Необходим для корректного демаршалинга (парсинга) кириллических полей 1С.
+// ODataClassroom описывает структуру аудитории в формате OData 1С.
 type ODataClassroom struct {
-	RefKey      string   `json:"Ref_Key"`            // Внутренний UUID элемента в 1С
-	Description string   `json:"Description"`        // Наименование (номер кабинета)
-	Capacity    int      `json:"Вместимость,string"` // 1С часто возвращает числа как строки, тег ",string" автоматически конвертирует их в int
-	RoomType    RoomType `json:"ТипКабинета"`        // Реквизит перечисления из 1С
-	Building    Building `json:"Корпус"`             // Реквизит перечисления из 1С
+	RefKey      string   `json:"Ref_Key"`
+	Description string   `json:"Description"`
+	Capacity    int      `json:"Вместимость,string"` // 1С возвращает числа как строки, тег ",string" чинит это
+	RoomType    RoomType `json:"ТипКабинета"`
+	Building    Building `json:"Корпус"`
 }
 
-// ODataClassroomResponse описывает обертку верхнего уровня для GET-ответов от OData 1С.
-// В OData все массивы объектов всегда прилетают внутри JSON-поля "value".
+// ODataClassroomResponse представляет контейнер верхнего уровня для списка аудиторий из 1С.
 type ODataClassroomResponse struct {
-	Value []ODataClassroom `json:"value"` // Массив сырых объектов из 1С
+	Value []ODataClassroom `json:"value"`
 }
 
-// ClassroomCreatePayload описывает структуру JSON, которую присылает фронтенд при POST-запросе.
-// Здесь нет поля ID, так как идентификатор генерируется на стороне 1С при создании.
+// ClassroomCreatePayload содержит данные от фронтенда для создания аудитории.
 type ClassroomCreatePayload struct {
-	Number   string   `json:"number"`    // Номер создаваемого кабинета
-	Capacity int      `json:"capacity"`  // Вместимость мест
-	RoomType RoomType `json:"room_type"` // Назначение комнаты
-	Building Building `json:"building"`  // В каком корпусе находится
+	Number   string   `json:"number"`
+	Capacity int      `json:"capacity"`
+	RoomType RoomType `json:"room_type"`
+	Building Building `json:"building"`
 }
 
-// ODataClassroomCreate определяет структуру данных для отправки POST-запроса непосредственно в OData 1С.
-// Переводит названия полей на кириллицу, понятную конфигурации 1С.
+// ODataClassroomCreate определяет структуру POST-запроса для создания аудитории в 1С.
 type ODataClassroomCreate struct {
-	Description string   `json:"Description"` // Передаем номер в стандартное Наименование
-	Capacity    int      `json:"Вместимость"` // Имя реквизита в 1С
-	RoomType    RoomType `json:"ТипКабинета"` // Имя реквизита в 1С
-	Building    Building `json:"Корпус"`      // Имя реквизита в 1С
+	Description string   `json:"Description"`
+	Capacity    int      `json:"Вместимость"`
+	RoomType    RoomType `json:"ТипКабинета"`
+	Building    Building `json:"Корпус"`
 }
 
-// ClassroomCreatePayload описывает структуру JSON для частичного изменения кабинета (PATCH).
-// Использование указателей (*string, *int) критически важно: если фронтенд пришлет только
-// {"capacity": 30}, то поля Number, RoomType и Building будут равны nil.
-// Это позволяет Go понять, что их обновлять не нужно, а не затирать их пустыми значениями.
+// ClassroomUpdatePayload содержит поля для частичного изменения аудитории (PATCH).
 type ClassroomUpdatePayload struct {
-	Number   *string   `json:"number,omitempty"`    // Необязательный новый номер аудитории
-	Capacity *int      `json:"capacity,omitempty"`  // Необязательная новая вместимость
-	RoomType *RoomType `json:"room_type,omitempty"` // Необязательный новый тип кабинета
-	Building *Building `json:"building,omitempty"`  // Необязательный новый корпус
+	Number   *string   `json:"number,omitempty"`
+	Capacity *int      `json:"capacity,omitempty"`
+	RoomType *RoomType `json:"room_type,omitempty"`
+	Building *Building `json:"building,omitempty"`
 }
 
-// ODataClassroomUpdate передает измененные реквизиты аудитории в 1С в формате PATCH.
-// Теги omitempty указывают Go-серверу полностью исключать непереданные (равные значению по умолчанию)
-// поля из результирующего JSON-пакета, чтобы 1С обновила исключительно запрошенные реквизиты.
+// ODataClassroomUpdate определяет структуру PATCH-запроса для обновления аудитории в 1С.
 type ODataClassroomUpdate struct {
-	Description string   `json:"Description,omitempty"` // Новое наименование (если менялось)
-	Capacity    int      `json:"Вместимость,omitempty"` // Новая вместимость (если менялась)
-	RoomType    RoomType `json:"ТипКабинета,omitempty"` // Новый тип кабинета (если менялся)
-	Building    Building `json:"Корпус,omitempty"`      // Новый корпус (если менялся)
+	Description string   `json:"Description,omitempty"`
+	Capacity    int      `json:"Вместимость,omitempty"`
+	RoomType    RoomType `json:"ТипКабинета,omitempty"`
+	Building    Building `json:"Корпус,omitempty"`
 }

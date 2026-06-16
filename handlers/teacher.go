@@ -9,22 +9,21 @@ import (
 	"academic-booking-api/models"
 )
 
-// TeacherHandler отвечает за обработку HTTP-запросов для преподавателей
+// TeacherHandler отвечает за обработку HTTP-запросов для сущности «Преподаватели».
 type TeacherHandler struct {
 	OData *client.ODataClient
 }
 
-// NewTeacherHandler — конструктор для инициализации хендлера
+// NewTeacherHandler возвращает новый экземпляр TeacherHandler.
 func NewTeacherHandler(odataClient *client.ODataClient) *TeacherHandler {
 	return &TeacherHandler{OData: odataClient}
 }
 
-// GET /api/v1/teachers — Получение списка всех преподавателей
+// GetTeachers обрабатывает запрос GET /api/v1/teachers для получения списка всех преподавателей.
 func (h *TeacherHandler) GetTeachers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	// Запрашиваем данные у 1С. Для ссылки "Кафедра" запрашиваем поле "Кафедра_Key"
 	rawData, err := h.OData.Get("Catalog_Преподаватели?$format=json&$select=Ref_Key,Description,Кафедра_Key,Должность")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -50,7 +49,7 @@ func (h *TeacherHandler) GetTeachers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(teachers)
 }
 
-// POST /api/v1/teachers — Создание нового преподавателя
+// CreateTeacher обрабатывает запрос POST /api/v1/teachers для создания нового преподавателя.
 func (h *TeacherHandler) CreateTeacher(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -65,10 +64,6 @@ func (h *TeacherHandler) CreateTeacher(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "ФИО преподавателя не может быть пустым", http.StatusBadRequest)
 		return
 	}
-	//	if payload.Department == "" {
-	//		http.Error(w, "ID кафедры не может быть пустым", http.StatusBadRequest)
-	//		return
-	//	}
 	if !payload.Position.IsValid() {
 		http.Error(w, fmt.Sprintf("Некорректная должность: %s", payload.Position), http.StatusBadRequest)
 		return
@@ -90,7 +85,7 @@ func (h *TeacherHandler) CreateTeacher(w http.ResponseWriter, r *http.Request) {
 	w.Write(rawData)
 }
 
-// PATCH /api/v1/teachers/{id} — Частичное обновление данных преподавателя
+// UpdateTeacher обрабатывает запрос PATCH /api/v1/teachers/{id} для частичного обновления преподавателя.
 func (h *TeacherHandler) UpdateTeacher(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -134,7 +129,7 @@ func (h *TeacherHandler) UpdateTeacher(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"status":"updated"}` + "\n"))
 }
 
-// DELETE /api/v1/teachers/{id} — Удаление преподавателя
+// DeleteTeacher обрабатывает запрос DELETE /api/v1/teachers/{id} для удаления преподавателя.
 func (h *TeacherHandler) DeleteTeacher(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 

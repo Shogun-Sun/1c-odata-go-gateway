@@ -9,22 +9,21 @@ import (
 	"academic-booking-api/models"
 )
 
-// ClassroomHandler отвечает за обработку HTTP-запросов для кабинетов
+// ClassroomHandler отвечает за обработку HTTP-запросов для сущности «Кабинеты».
 type ClassroomHandler struct {
-	OData *client.ODataClient // Клиент для связи с 1С
+	OData *client.ODataClient
 }
 
-// NewClassroomHandler — конструктор для инициализации хендлера
+// NewClassroomHandler возвращает новый экземпляр ClassroomHandler.
 func NewClassroomHandler(odataClient *client.ODataClient) *ClassroomHandler {
 	return &ClassroomHandler{OData: odataClient}
 }
 
-// GET /api/v1/classrooms — Получение списка всех кабинетов
+// GetClassrooms обрабатывает запрос GET /api/v1/classrooms для получения списка всех кабинетов.
 func (h *ClassroomHandler) GetClassrooms(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	// Запрашиваем данные у 1С с нужными полями
 	rawData, err := h.OData.Get("Catalog_Кабинеты?$format=json&$select=Ref_Key,Description,Вместимость,ТипКабинета,Корпус")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -37,7 +36,6 @@ func (h *ClassroomHandler) GetClassrooms(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// Переводим данные из формата 1С в чистый JSON для фронтенда
 	classrooms := make([]models.Classroom, 0, len(odataResp.Value))
 	for _, oc := range odataResp.Value {
 		classrooms = append(classrooms, models.Classroom{
@@ -52,7 +50,7 @@ func (h *ClassroomHandler) GetClassrooms(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(classrooms)
 }
 
-// POST /api/v1/classrooms — Создание нового кабинета
+// CreateClassroom обрабатывает запрос POST /api/v1/classrooms для создания нового кабинета.
 func (h *ClassroomHandler) CreateClassroom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -63,7 +61,6 @@ func (h *ClassroomHandler) CreateClassroom(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Проверка входящих значений на соответствие перечислениям 1С
 	if !payload.Building.IsValid() {
 		http.Error(w, fmt.Sprintf("Некорректный корпус: %s", payload.Building), http.StatusBadRequest)
 		return
@@ -80,7 +77,6 @@ func (h *ClassroomHandler) CreateClassroom(w http.ResponseWriter, r *http.Reques
 		Building:    payload.Building,
 	}
 
-	// Отправляем пакет на создание в 1С
 	rawData, err := h.OData.Post("Catalog_Кабинеты?$format=json", odataBody)
 	if err != nil {
 		http.Error(w, "Ошибка создания в 1С: "+err.Error(), http.StatusInternalServerError)
@@ -91,7 +87,7 @@ func (h *ClassroomHandler) CreateClassroom(w http.ResponseWriter, r *http.Reques
 	w.Write(rawData)
 }
 
-// PATCH /api/v1/classrooms/{id} — Частичное обновление данных кабинета
+// UpdateClassroom обрабатывает запрос PATCH /api/v1/classrooms/{id} для частичного обновления кабинета.
 func (h *ClassroomHandler) UpdateClassroom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -107,7 +103,6 @@ func (h *ClassroomHandler) UpdateClassroom(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Заполняем структуру обновления только теми полями, которые пришли в запросе
 	odataBody := models.ODataClassroomUpdate{}
 
 	if payload.Number != nil {
@@ -143,7 +138,7 @@ func (h *ClassroomHandler) UpdateClassroom(w http.ResponseWriter, r *http.Reques
 	w.Write([]byte(`{"status":"updated"}` + "\n"))
 }
 
-// DELETE /api/v1/classrooms/{id} — Удаление кабинета
+// DeleteClassroom обрабатывает запрос DELETE /api/v1/classrooms/{id} для удаления кабинета.
 func (h *ClassroomHandler) DeleteClassroom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
