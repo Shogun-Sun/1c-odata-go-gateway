@@ -1,22 +1,5 @@
 package models
 
-// Position определяет должность преподавателя в виде строго типизированной строки.
-type Position string
-
-// Константы должностей, соответствующие значениям перечисления в конфигураторе 1С.
-const (
-	PositionTeacher Position = "Преподаватель"
-)
-
-// IsValid проверяет, входит ли переданная должность в список разрешенных.
-func (p Position) IsValid() bool {
-	switch p {
-	case PositionTeacher:
-		return true
-	}
-	return false
-}
-
 // Teacher описывает модель преподавателя, возвращаемую клиенту (Web API).
 type Teacher struct {
 	ID         string   `json:"id"`

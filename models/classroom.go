@@ -1,40 +1,5 @@
 package models
 
-// RoomType определяет тип назначения аудитории.
-type RoomType string
-
-// Building определяет учебный корпус площадки.
-type Building string
-
-// Константы перечислений, строго соответствующие именам объектов в конфигураторе 1С.
-const (
-	RoomComputer RoomType = "КомпьютерныйКласс"
-	RoomLecture  RoomType = "Лекционный"
-	RoomLab      RoomType = "Лаборатория"
-
-	BuildingMain   Building = "ПерваяПлощадка"
-	BuildingSecond Building = "ВтораяПлощадка"
-	BuildingSormov Building = "Общежитие"
-)
-
-// IsValid проверяет, входит ли переданный корпус в список разрешенных.
-func (b Building) IsValid() bool {
-	switch b {
-	case BuildingMain, BuildingSecond, BuildingSormov:
-		return true
-	}
-	return false
-}
-
-// IsValid проверяет, валиден ли переданный тип кабинета.
-func (rt RoomType) IsValid() bool {
-	switch rt {
-	case RoomComputer, RoomLecture, RoomLab:
-		return true
-	}
-	return false
-}
-
 // Classroom описывает модель аудитории, возвращаемую клиенту (Web API).
 type Classroom struct {
 	ID       string   `json:"id"`
