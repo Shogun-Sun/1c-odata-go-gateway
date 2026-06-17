@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"academic-booking-api/client"
-	"academic-booking-api/models"
+	"academic-booking-api/internal/client"
+	"academic-booking-api/internal/models"
 )
 
 // TeacherHandler отвечает за обработку HTTP-запросов для сущности «Преподаватели».

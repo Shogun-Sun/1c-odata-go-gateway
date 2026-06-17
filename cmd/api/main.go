@@ -4,7 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"academic-booking-api/client"
+	"academic-booking-api/internal"
+	"academic-booking-api/internal/client"
 )
 
 const (
@@ -20,7 +21,7 @@ func main() {
 	odataClient := client.NewODataClient(ODataURL, Username, Password)
 	log.Printf("Клиент OData настроен на адрес: %s\n", odataClient.BaseURL)
 
-	router := setupRoutes(odataClient)
+	router := internal.SetupRoutes(odataClient)
 
 	log.Printf("Go-сервер успешно запущен на http://localhost%s\n", ServerPort)
 	if err := http.ListenAndServe(ServerPort, router); err != nil {

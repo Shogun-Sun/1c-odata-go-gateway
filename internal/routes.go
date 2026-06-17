@@ -1,17 +1,17 @@
-package main
+package internal
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"academic-booking-api/client"
-	"academic-booking-api/handlers"
+	"academic-booking-api/internal/client"
+	"academic-booking-api/internal/handlers"
 )
 
 // setupRoutes инициализирует хендлеры и регистрирует все эндпоинты API,
 // возвращая настроенный http.Handler
-func setupRoutes(odataClient *client.ODataClient) http.Handler {
+func SetupRoutes(odataClient *client.ODataClient) http.Handler {
 	mux := http.NewServeMux()
 
 	groupHandler := handlers.NewGroupHandler(odataClient)

@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"academic-booking-api/client"
-	"academic-booking-api/models"
+	"academic-booking-api/internal/client"
+	"academic-booking-api/internal/models"
 	"encoding/json"
 	"fmt"
 	"net/http"
