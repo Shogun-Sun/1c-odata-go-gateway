@@ -7,9 +7,8 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./base1:/base
+      - ${HOST_BASE_PATH}:/base
       - ./deploy/docker/entrypoint.sh:/entrypoint.sh
-    environment:
-      - UID=${UID:-1000}
-      - GID=${GID:-1000}
+    env_file:
+      - .env
     restart: unless-stopped
