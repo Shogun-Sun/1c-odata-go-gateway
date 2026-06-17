@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: ./deploy/docker
+      dockerfile: Dockerfile
+    container_name: academic-test
+    ports:
+      - "8080:80"
+    volumes:
+      - ./base1:/base
+      - ./deploy/docker/entrypoint.sh:/entrypoint.sh
+    environment:
+      - UID=${UID:-1000}
+      - GID=${GID:-1000}
+    restart: unless-stopped

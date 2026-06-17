@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	ODataURL   = "http://localhost:8080/odata_base/odata/standard.odata/"
+	ODataURL   = "http://localhost:8080/booking/odata/standard.odata/"
 	Username   = "administrator"
 	Password   = ""
 	ServerPort = ":4000"
