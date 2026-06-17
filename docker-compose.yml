@@ -1,14 +1,25 @@
 services:
-  app:
+  1c-server:
     build:
-      context: ./deploy/docker
+      context: ./deploy/docker/1c
       dockerfile: Dockerfile
     container_name: academic-test
     ports:
       - "8080:80"
     volumes:
       - ${HOST_BASE_PATH}:/base
-      - ./deploy/docker/entrypoint.sh:/entrypoint.sh
+      - ./deploy/docker/1c/entrypoint.sh:/entrypoint.sh
     env_file:
       - .env
+    restart: unless-stopped
+  api: 
+    build: 
+      context: .
+      dockerfile: deploy/docker/api/Dockerfile
+    ports:
+      - "${EXTERNAL_GO_SERVER_PORT}:${GO_SERVER_PORT}"
+    env_file:
+      - .env
+    depends_on:
+      - 1c-server
     restart: unless-stopped
