@@ -2,7 +2,7 @@
 FROM alt:p11 AS builder
 
 # Выносим имя установщика в ARG
-ARG INSTALLER_NAME=имя_файла.run
+ARG INSTALLER_NAME=setup-training-8.5.1.1150-x86_64.run
 
 RUN apt-get update && apt-get install -y wget glibc-core glibc-pthread libstdc++6 && apt-get clean
 
