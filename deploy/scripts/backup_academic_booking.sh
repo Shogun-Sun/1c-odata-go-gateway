@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ### PARAMETERS ###
-NON_ROOT_USER="user"                 # Имя пользователя в Системе
+NON_ROOT_USER=                 # Имя пользователя в Системе
 STORAGE="/home/${NON_ROOT_USER}/backups"      # Каталог для сохранения резервных копий
-IB_BASE_PATH="/media/sf_academic-booking-api/base1" # Полный путь к папке с базой 1С
+IB_BASE_PATH= # Полный путь к папке с базой 1С
 SRV="localhost"                       
 REF="base1"                                   # Имя базы для имени файла бэкапа
-LOGIN="Administrator"                         # Логин администратора в 1С
+LOGIN=                         # Логин администратора в 1С
 KEEP_BACKUPS_FOR_LAST_DAYS="2"            
 BACKUP_TIMEOUT_SEC="300"                  
 
